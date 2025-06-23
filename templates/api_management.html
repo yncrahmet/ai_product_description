@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Yönetimi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <style>
+        .container { max-width: 800px; margin-top: 20px; padding: 15px; }
+        .card { margin-bottom: 15px; }
+        .copy-btn { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">API Yönetimi</h2>
+        <a href="/user-panel" class="btn btn-secondary mb-3">Geri Dön</a>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">API Bilgilerin</h5>
+                <p><strong>Email:</strong> {{ email }}</p>
+                <p><strong>Plan:</strong> {{ plan }}</p>
+                <p><strong>Kalan Limit:</strong> {{ remaining }}</p>
+                <p><strong>Token:</strong> <span id="tokenValue">{{ token }}</span> <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('tokenValue')">Kopyala</button></p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">API Endpoint’leri</h5>
+                <p><strong>Ürün Açıklama Oluştur:</strong> <code>https://yourdomain.com/generate-description</code></p>
+                <p><em>Not: Bu endpoint’e POST isteği göndererek ürün açıklaması oluşturabilirsiniz.</em></p>
+                <p><strong>Örnek İstek:</strong></p>
+                <pre>
+{
+    "product_name": "Akıllı Saat",
+    "category": "Teknoloji",
+    "audience": "Gençler",
+    "material": "Alüminyum",
+    "usage": "Fitness Takibi",
+    "platform": "Android/iOS"
+}
+                </pre>
+                <p><strong>Örnek Yanıt:</strong></p>
+                <pre>
+{
+    "description": "Akıllı Saat ile fitness hedeflerine ulaş! Gençler için tasarlanan bu alüminyum saat, Android/iOS ile uyumlu. Şimdi satın al!"
+}
+                </pre>
+                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('endpointCode')">Endpoint Kopyala</button>
+            </div>
+        </div>
+        <a href="/logout" class="btn btn-danger mt-3">Çıkış Yap</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script>
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Metin panoya kopyalandı!');
+            });
+        }
+    </script>
+</body>
+</html>

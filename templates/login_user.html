@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Giriş</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <style>
+        .container { max-width: 400px; margin-top: 100px; }
+        .alert { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Kullanıcı Giriş</h2>
+        <form method="POST" action="/validate-token">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="token" class="form-label">Token</label>
+                <input type="text" class="form-control" id="token" name="token" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+        </form>
+        <div id="result" class="alert alert-danger" style="display: none;"></div>
+    </div>
+    <script>
+    document.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const email = formData.get('email');
+        const token = formData.get('token');
+        const resultDiv = document.getElementById('result');
+
+        try {
+            const response = await fetch('/validate-token', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'X-User-Email': email }
+            });
+            const result = await response.json();
+            if (response.ok) {
+                resultDiv.className = 'alert alert-success';
+                resultDiv.textContent = `Giriş başarılı! Kalan limit: ${result.remaining}, Plan: ${result.plan}`;
+                resultDiv.style.display = 'block';
+                // Yönlendirme istemci tarafında
+                window.location.href = `/user-panel?remaining=${result.remaining}&plan=${result.plan}&email=${result.email}`;
+            } else {
+                resultDiv.className = 'alert alert-danger';
+                resultDiv.textContent = result.error || 'Bir hata oluştu';
+                resultDiv.style.display = 'block';
+            }
+        } catch (error) {
+            resultDiv.className = 'alert alert-danger';
+            resultDiv.textContent = 'Hata: ' + error.message;
+            resultDiv.style.display = 'block';
+        }
+    });
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+</html>
