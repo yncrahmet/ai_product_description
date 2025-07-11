@@ -1,63 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>API Yönetimi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         .container { max-width: 800px; margin-top: 20px; padding: 15px; }
-        .card { margin-bottom: 15px; }
+        .card { margin-bottom: 20px; }
         .copy-btn { cursor: pointer; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center mb-4">API Yönetimi</h2>
-        <a href="/user-panel" class="btn btn-secondary mb-3">Geri Dön</a>
+        <h2 class="text-center mb-4">🔐 API Yönetimi</h2>
+
+        <a href="/user-panel" class="btn btn-secondary mb-3">← Panele Geri Dön</a>
+
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">API Bilgilerin</h5>
+                <h5 class="card-title">🧾 API Bilgilerin</h5>
                 <p><strong>Email:</strong> {{ email }}</p>
                 <p><strong>Plan:</strong> {{ plan }}</p>
                 <p><strong>Kalan Limit:</strong> {{ remaining }}</p>
-                <p><strong>Token:</strong> <span id="tokenValue">{{ token }}</span> <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('tokenValue')">Kopyala</button></p>
+                <p>
+                    <strong>Token:</strong>
+                    <code id="tokenValue">{{ token }}</code>
+                    <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('tokenValue')">Kopyala</button>
+                </p>
             </div>
         </div>
+
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">API Endpoint’leri</h5>
-                <p><strong>Ürün Açıklama Oluştur:</strong> <code>https://yourdomain.com/generate-description</code></p>
-                <p><em>Not: Bu endpoint’e POST isteği göndererek ürün açıklaması oluşturabilirsiniz.</em></p>
-                <p><strong>Örnek İstek:</strong></p>
-                <pre>
-{
+                <h5 class="card-title">🚀 API Endpoint’leri</h5>
+                <p><strong>Ürün Açıklama Oluştur:</strong></p>
+                <p>
+                    <code id="endpointCode">https://yourdomain.com/api/generate-description</code>
+                    <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('endpointCode')">Endpoint Kopyala</button>
+                </p>
+                <p><em>POST isteği ile açıklama oluşturabilirsiniz.</em></p>
+
+                <h6 class="mt-4">🛠️ Gerekli Header’lar:</h6>
+                <pre><code>
+Authorization: Bearer {{ token }}
+X-User-Email: {{ email }}
+Content-Type: application/json
+                </code></pre>
+
+                <h6 class="mt-4">📦 Örnek İstek:</h6>
+                <pre><code id="requestExample">{
     "product_name": "Akıllı Saat",
     "category": "Teknoloji",
     "audience": "Gençler",
     "material": "Alüminyum",
     "usage": "Fitness Takibi",
     "platform": "Android/iOS"
-}
-                </pre>
-                <p><strong>Örnek Yanıt:</strong></p>
-                <pre>
-{
+}</code></pre>
+                <button class="btn btn-sm btn-outline-primary copy-btn mb-3" onclick="copyToClipboard('requestExample')">İstek Kopyala</button>
+
+                <h6>✅ Örnek Yanıt:</h6>
+                <pre><code>{
     "description": "Akıllı Saat ile fitness hedeflerine ulaş! Gençler için tasarlanan bu alüminyum saat, Android/iOS ile uyumlu. Şimdi satın al!"
-}
-                </pre>
-                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('endpointCode')">Endpoint Kopyala</button>
+}</code></pre>
             </div>
         </div>
+
         <a href="/logout" class="btn btn-danger mt-3">Çıkış Yap</a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function copyToClipboard(elementId) {
             const text = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(text).then(() => {
-                alert('Metin panoya kopyalandı!');
+                alert('Panoya kopyalandı!');
             });
         }
     </script>

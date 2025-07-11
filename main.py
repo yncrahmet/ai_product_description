@@ -64,14 +64,64 @@ PLAN_LIMITS = {
 
 driver_lock = threading.Lock()
 
-# Veritabanını başlat
 init_db()
-# Örnek admin ekle (ilk kurulumda bir kez çalıştır, sonra yorum satırına al)
 add_admin(os.getenv("ADMIN_EMAIL"), os.getenv("ADMIN_PASSWORD"),os.getenv("ADMIN_SECRET"))
 
 @app.route('/create-token-form')
 def create_token_form():
     return render_template("create_token.html")
+
+@app.route('/api/generate-description', methods=['POST'])
+@limiter.limit("10 per minute")
+def api_generate_description():
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "").strip()
+    email = request.headers.get("X-User-Email", "")
+
+    if not token or not email:
+        return jsonify({"error": "Token veya email eksik"}), 401
+
+    user_data = r.get(f"user:{token}")
+    if not user_data:
+        return jsonify({"error": "Geçersiz token"}), 401
+
+    user = json.loads(user_data)
+    if user['email'] != email:
+        return jsonify({"error": "Token-email uyuşmazlığı"}), 401
+
+    if user['remaining'] <= 0:
+        return jsonify({"error": "Limit dolmuş"}), 402
+
+    user['remaining'] -= 1
+    r.set(f"user:{token}", json.dumps(user))
+    r.set(f"usage:{token}", f"Son kullanım: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ex=86400)
+
+    data = request.get_json()
+    required_fields = ['product_name', 'category', 'audience', 'material', 'usage', 'platform']
+    if not all(data.get(f) for f in required_fields):
+        return jsonify({"error": "Eksik bilgi var"}), 400
+
+    prompt = f"""
+    Ürün Adı: {data['product_name']}
+    Kategori: {data['category']}
+    Hedef Kitle: {data['audience']}
+    Malzeme: {data['material']}
+    Kullanım: {data['usage']}
+    Platform: {data['platform']}
+
+    Yukarıdaki bilgilere göre şu kurallara uygun, SEO uyumlu, 250 kelimelik, profesyonel ve satışa yönelik bir ürün açıklaması yaz:
+    - Başlık: Ürün adını ve anahtar kelimeleri içeren çekici bir başlık (H1).
+    - Giriş: Ürünün temel faydasını ve hedef kitleye hitap eden 2-3 cümle.
+    - Özellikler: Madde işaretleriyle malzeme, kullanım ve platformu vurgulayan 3-5 özellik.
+    - CTA: 'Şimdi satın al', 'Hemen keşfet' gibi bir call-to-action.
+    - Anahtar Kelimeler: 'product_name', 'category', 'audience' ile ilişkili doğal anahtar kelimeleri %1-2 yoğunlukta kullan.
+    - Okunabilirlik: Kısa cümleler, aktif dil ve kullanıcı dostu ton.
+    """
+
+    answer = ask_gemini(prompt)
+    if answer:
+        return jsonify({"description": answer})
+    return jsonify({"error": "Ürün açıklaması oluşturulamadı"}), 500
 
 def ask_gemini(prompt):
     with driver_lock:

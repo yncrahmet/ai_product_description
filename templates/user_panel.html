@@ -59,7 +59,10 @@
                     <label for="platform" class="form-label">Platform</label>
                     <input type="text" class="form-control" id="platform" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Açıklama Oluştur</button>
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                    Açıklama Oluştur
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true" id="loadingSpinner"></span>
+                </button>
             </form>
         </div>
         <div class="clear"></div>
@@ -100,8 +103,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
     <script>
+        
         document.getElementById('generateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const spinner = document.getElementById('loadingSpinner');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            spinner.classList.remove('d-none'); // Spinner'ı göster
+
             const data = {
                 product_name: document.getElementById('product_name').value,
                 category: document.getElementById('category').value,
@@ -110,34 +120,53 @@
                 usage: document.getElementById('usage').value,
                 platform: document.getElementById('platform').value
             };
-            const response = await fetch('/generate-description', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await response.json();
-            const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
-            if (result.description) {
-                document.getElementById('modalDescription').textContent = result.description;
-                const descriptionModal = new bootstrap.Modal(document.getElementById('descriptionModal'));
-                descriptionModal.show();
-                document.getElementById('alertModalBody').textContent = "Açıklama başarıyla oluşturuldu!";
+
+            try {
+                const response = await fetch('/generate-description', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                if (result.description) {
+                    document.getElementById('modalDescription').textContent = result.description;
+                    const descriptionModal = new bootstrap.Modal(document.getElementById('descriptionModal'));
+                    descriptionModal.show();
+                    document.getElementById('alertModalBody').textContent = "Açıklama başarıyla oluşturuldu!";
+                    alertModal._element.classList.add('success');
+                } else {
+                    document.getElementById('alertModalBody').textContent = result.error || "Bir hata oluştu";
+                    alertModal._element.classList.remove('success');
+                }
                 alertModal.show();
-                alertModal._element.classList.add('success'); // Yeşil renk için
-            } else {
-                document.getElementById('alertModalBody').textContent = result.error || "Bir hata oluştu";
-                alertModal.show();
-                alertModal._element.classList.remove('success'); // Kırmızı renk için
+                alertModal._element.addEventListener('hidden.bs.modal', () => {
+                    alertModal._element.classList.remove('success');
+                });
+            } catch (error) {
+                console.error("İstek hatası:", error);
+                document.getElementById('alertModalBody').textContent = "Sunucuya ulaşılamadı.";
+                new bootstrap.Modal(document.getElementById('alertModal')).show();
+            } finally {
+                submitBtn.disabled = false;
+                spinner.classList.add('d-none'); // Spinner'ı gizle
             }
-            alertModal._element.addEventListener('hidden.bs.modal', () => {
-                alertModal._element.classList.remove('success');
-            });
         });
+
 
         document.getElementById('copyButton').addEventListener('click', () => {
             const description = document.getElementById('modalDescription').textContent;
             navigator.clipboard.writeText(description).then(() => {
-                alert('Açıklama panoya kopyalandı!');
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                const alertModalEl = document.getElementById('alertModal');
+                document.getElementById('alertModalBody').textContent = "Açıklama panoya kopyalandı!";
+                alertModalEl.classList.add('success');
+                alertModal.show();
+
+                alertModalEl.addEventListener('hidden.bs.modal', () => {
+                    alertModalEl.classList.remove('success');
+                });
             });
         });
     </script>
